@@ -17,13 +17,16 @@ from qiskit.transpiler.basepasses import TransformationPass
 from qiskit._accelerate import wrap_angles
 from qiskit._accelerate.angle_bound_registry import WrapAngleRegistry
 
+from . import control_flow
+
 
 class WrapAngles(TransformationPass):
     """Wrap angles outside the bound specified in the target.
 
-    This pass will check all the gates in the circuit and check if there are any gates outside the
-    bound specified in the target. If any gates outside the bound are identified, the callback in
-    the target will be called to substitute the gate outside the bound with an equivalent subcircuit.
+    This pass will check all the gates in the circuit, including those nested inside control-flow
+    operations, and check if there are any gates outside the bound specified in the target. If any
+    gates outside the bound are identified, the callback in the target will be called to substitute
+    the gate outside the bound with an equivalent subcircuit.
     This pass does not run on gates that are parameterized, even if the gate has unparameterized
     parameters outside a specified bound. If there are parameterized gates in the circuit they will
     be ignored by this pass as bound angles are necessary to transform the gate. For example the below
@@ -103,6 +106,7 @@ class WrapAngles(TransformationPass):
         self.target = target
         self.registry = self.DEFAULT_REGISTRY if registry is None else registry
 
+    @control_flow.trivial_recurse
     def run(self, dag):
         wrap_angles.wrap_angles(dag, self.target, self.registry)
         return dag

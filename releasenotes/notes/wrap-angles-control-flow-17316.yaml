@@ -1,0 +1,10 @@
+---
+fixes:
+  - |
+    Fixed the :class:`.WrapAngles` transpiler pass, and therefore :func:`.transpile`,
+    ignoring :class:`.Target` angle bounds on gates inside control-flow operations
+    such as :class:`.IfElseOp`, :class:`.ForLoopOp`, :class:`.WhileLoopOp`, and
+    :class:`.SwitchCaseOp`. Out-of-bounds gates in those blocks are now rewritten
+    using the registered wrap callbacks, matching the top-level circuit behavior.
+
+    Fixed `#17316 <https://github.com/Qiskit/qiskit/issues/17316>`__.
