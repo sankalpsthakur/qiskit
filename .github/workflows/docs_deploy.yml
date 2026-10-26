@@ -13,12 +13,11 @@ jobs:
     name: Configure
     uses: ./.github/workflows/config.yml
 
-  build:
-    if: github.repository_owner == 'Qiskit'
-    name: Build
-    needs: [config]
-    runs-on: ${{ needs.config.outputs.runner-linux-x86_64 }}
-
+  find-branch:
+    name: Determine GitHub branch name
+    runs-on: ubuntu-latest
+    outputs:
+      base-branch: ${{ steps.find-branch.outputs.base-branch }}
     steps:
       - name: Determine GitHub branch name
         id: find-branch
@@ -34,10 +33,13 @@ jobs:
           echo "Using branch '${BRANCH_NAME}' for GitHub source code links"
           echo "base-branch=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
 
-      - name: Build documentation
-        uses: ./.github/workflows/docs.yml
-        with:
-          python-version: ${{ needs.config.outputs.python-new }}
-          runner: ${{ needs.config.outputs.runner-linux-x86_64 }}
-          branch-name: ${{ steps.find-branch.outputs.base-branch }}
-        secrets: inherit
+  build:
+    if: github.repository_owner == 'Qiskit'
+    name: Build
+    needs: [config, find-branch]
+    uses: ./.github/workflows/docs.yml
+    with:
+      python-version: ${{ needs.config.outputs.python-new }}
+      runner: ${{ needs.config.outputs.runner-linux-x86_64 }}
+      base-branch: ${{ needs.find-branch.outputs.base-branch }}
+    secrets: inherit
